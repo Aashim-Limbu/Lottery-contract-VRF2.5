@@ -15,6 +15,11 @@ contract Raffle is VRFConsumerBaseV2Plus {
     error Raffle__InsufficientDeposit();
     error Raffle__TransferFailed();
     error Raffle__NotOpen();
+    error Raffle__UpkeepNotNeeded(
+        uint256 balance,
+        uint256 playerLength,
+        RaffleState raffleState
+    );
     //Enums
     enum RaffleState {
         OPEN,
@@ -59,17 +64,48 @@ contract Raffle is VRFConsumerBaseV2Plus {
         if (msg.value < i_entryFee) {
             revert Raffle__InsufficientDeposit();
         }
-        if (s_raffleState != RaffleState(0)) {
+        if (s_raffleState != RaffleState.OPEN) {
             revert Raffle__NotOpen();
         }
         s_players.push(payable(msg.sender));
         emit VerifiedPlayer(msg.sender);
     }
 
-    function pickWinner() external {
+    /**
+     * @dev This is the function that the Chainlink Keeper nodes call
+     * they look for `upkeepNeeded` to return True.
+     * the following should be true for this to return true:
+     * 1. The time interval has passed between raffle runs.
+     * 2. The lottery is open.
+     * 3. The contract has ETH.
+     * 4. There are players registered.
+     * 5. Implicity, your subscription is funded with LINK.
+     */
+    function checkUpkeep(
+        bytes memory
+    ) public view returns (bool upkeepNeeded, bytes memory) {
+        bool hasTimePassed = (block.timestamp - s_lastTimeInvoked) >=
+            i_interval;
+        bool isContractOpen = s_raffleState == RaffleState.OPEN;
+        bool hasBalance = address(this).balance > 0;
+        bool hasPlayers = s_players.length > 0;
+        upkeepNeeded =
+            hasTimePassed &&
+            isContractOpen &&
+            hasBalance &&
+            hasPlayers; //it returns automatically
+        return (upkeepNeeded, "");
+    }
+
+    function performUpkeep(bytes calldata /* performData */) external {
         //
-        if ((block.timestamp - s_lastTimeInvoked) < i_interval) {
-            revert();
+        (bool upkeepNeeded, ) = checkUpkeep("");
+        if (!upkeepNeeded) {
+            revert Raffle__UpkeepNotNeeded(
+                address(this).balance,
+                s_players.length,
+                RaffleState.OPEN
+            );
         }
         s_raffleState = RaffleState.CALCULATING;
         //generate random words then

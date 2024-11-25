@@ -11,7 +11,8 @@ contract RaffleScript is Script {
 
     function run() public {
         vm.startBroadcast();
-        raffle = new Raffle(5e16);
+        // raffle = new Raffle(5e16);
         vm.stopBroadcast();
     }
 }
+// 
