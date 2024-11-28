@@ -57,7 +57,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         i_callbackGasLimit = _callbackGasLimit;
         i_subscriptionId = _subscriptionId;
         s_lastTimeInvoked = block.timestamp;
-        s_raffleState = RaffleState(0);
+        s_raffleState = RaffleState.OPEN;
     }
 
     function enterRaffle() public payable {
@@ -146,5 +146,9 @@ contract Raffle is VRFConsumerBaseV2Plus {
     //getter function
     function getEntranceFee() external view returns (uint256) {
         return i_entryFee;
+    }
+
+    function getRaffleState() public view returns (RaffleState) {
+        return s_raffleState;
     }
 }

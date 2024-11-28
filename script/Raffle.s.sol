@@ -6,7 +6,7 @@ import {Raffle} from "src/Raffle.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
 contract DeployRaffle is Script {
-    Raffle public raffle;
+Raffle public raffle;
 
     function setUp() public {}
 
@@ -18,17 +18,19 @@ contract DeployRaffle is Script {
 
     function deployContract() public returns (Raffle, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
-        HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
+        HelperConfig.NetworkConfig memory networkConfig = helperConfig
+            .getConfig();
         vm.startBroadcast();
         raffle = new Raffle(
-            config.entryFee,
-            config.interval,
-            config.vrfCoordinator,
-            config.gasLane,
-            config.subscriptionId,
-            config.callbackGasLimit
+            networkConfig.entryFee,
+            networkConfig.interval,
+            networkConfig.vrfCoordinator,
+            networkConfig.gasLane,
+            networkConfig.subscriptionId,
+            networkConfig.callbackGasLimit
         );
         vm.stopBroadcast();
+        return (raffle, helperConfig);
     }
 }
 //

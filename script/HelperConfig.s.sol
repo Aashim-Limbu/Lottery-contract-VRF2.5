@@ -61,6 +61,7 @@ contract HelperConfig is CodeConstants, Script {
         if (LocalNetworkConfig.vrfCoordinator != address(0)) {
             return LocalNetworkConfig;
         }
+        //first we deploy our v2_5 Mock to serve us the vrf for the anvil chain
         vm.startBroadcast();
         VRFCoordinatorV2_5Mock vrfCoordinatorMock = new VRFCoordinatorV2_5Mock(
             MOCK_BASE_FEE,
@@ -68,6 +69,7 @@ contract HelperConfig is CodeConstants, Script {
             MOCK_WEI_PER_UINT_LINK
         );
         vm.stopBroadcast();
+        // we're making a Network config and saving it to the state variables
         LocalNetworkConfig = NetworkConfig({
             entryFee: 0.01 ether,
             interval: 30,
