@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, console} from "forge-std/Test.sol";
 import {DeployRaffle} from "@/script/Raffle.s.sol";
 import {Raffle} from "../../src/Raffle.sol";
 import {HelperConfig} from "@/script/HelperConfig.s.sol";
@@ -20,6 +20,9 @@ contract RaffleTest is Test {
     address public PLAYER = makeAddr("player");
     uint256 public constant STARTING_PLAYER_BALANCE = 10 ether;
 
+    event VerifiedPlayer(address indexed player);
+    event WinnerPicked(address indexed winner);
+
     function setUp() external {
         DeployRaffle deployer = new DeployRaffle();
         (raffle, helperConfig) = deployer.deployContract();
@@ -31,6 +34,8 @@ contract RaffleTest is Test {
         gasLane = networkConfig.gasLane;
         subscriptionId = networkConfig.subscriptionId;
         callbackGasLimit = networkConfig.callbackGasLimit;
+        console.log(vrfCoordinator);
+        vm.deal(PLAYER, STARTING_PLAYER_BALANCE);
     }
 
     function testRaffleInitialization() public view {
@@ -44,5 +49,39 @@ contract RaffleTest is Test {
         //Act & Assert
         vm.expectRevert(Raffle.Raffle__InsufficientDeposit.selector);
         raffle.enterRaffle();
+    }
+
+    function testRafflePlayerWhenTheyEnter() public {
+        //Arrange
+        vm.prank(PLAYER);
+        //Act
+        raffle.enterRaffle{value: entryFee}();
+        //Assert
+        address recordedPlayer = raffle.getPlayerWithIndex(0);
+        assert(PLAYER == recordedPlayer);
+    }
+
+    function testRaffleEnterEvent() public {
+        //Arrange
+        vm.prank(PLAYER);
+        //Act
+        vm.expectEmit(true, false, false, false, address(raffle));
+        emit VerifiedPlayer(PLAYER);
+        //Assert
+        raffle.enterRaffle{value: entryFee}();
+    }
+
+    function testRestrictPlayerBasedOnRaffleState() public {
+        //Arrange
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: entryFee}();
+        //How to wait for the interval since we have the player and the balance ready in the contract
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+        raffle.performUpkeep("");
+        //Act //Asserts
+        vm.expectRevert(Raffle.Raffle__NotOpen.selector);
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: entryFee}();
     }
 }

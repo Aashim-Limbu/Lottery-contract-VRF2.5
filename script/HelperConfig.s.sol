@@ -81,6 +81,7 @@ contract HelperConfig is CodeConstants, Script {
         });
         return LocalNetworkConfig;
     }
+
     function getConfig() public returns (NetworkConfig memory) {
         return getConfigByChainId(block.chainid);
     }

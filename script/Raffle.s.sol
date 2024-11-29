@@ -6,7 +6,7 @@ import {Raffle} from "src/Raffle.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
 
 contract DeployRaffle is Script {
-Raffle public raffle;
+    Raffle public raffle;
 
     function setUp() public {}
 
@@ -18,6 +18,8 @@ Raffle public raffle;
 
     function deployContract() public returns (Raffle, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
+        //initializing the network configuration before deploying the Raffle contract
+        //First we don't have the deployed configuration for the Anvil test chain thus we're initializing the mock
         HelperConfig.NetworkConfig memory networkConfig = helperConfig
             .getConfig();
         vm.startBroadcast();

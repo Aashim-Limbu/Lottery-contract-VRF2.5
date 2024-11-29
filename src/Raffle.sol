@@ -128,6 +128,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         uint256[] calldata randomWords
     ) internal override {
         //Effects Internal Contract State
+        //we recieve random words in array so picking up the first element
         uint256 indexOfWinner = randomWords[0] % s_players.length;
         address payable recentWinner = s_players[indexOfWinner];
         s_recentWinner = recentWinner;
@@ -150,5 +151,8 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     function getRaffleState() public view returns (RaffleState) {
         return s_raffleState;
+    }
+    function getPlayerWithIndex(uint256 idx)  public view returns(address) {
+        return s_players[idx];
     }
 }
