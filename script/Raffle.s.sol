@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import {Script, console} from "forge-std/Script.sol";
 import {Raffle} from "src/Raffle.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
+import {CreateSubscription} from "./Interaction.s.sol";
 
 contract DeployRaffle is Script {
     Raffle public raffle;
@@ -22,6 +23,16 @@ contract DeployRaffle is Script {
         //First we don't have the deployed configuration for the Anvil test chain thus we're initializing the mock
         HelperConfig.NetworkConfig memory networkConfig = helperConfig
             .getConfig();
+        if (networkConfig.subscriptionId == 0) {
+            //create subscription
+            CreateSubscription createSubscription = new CreateSubscription();
+            (
+                networkConfig.subscriptionId,
+                networkConfig.vrfCoordinator
+            ) = createSubscription.createSubscription(
+                networkConfig.vrfCoordinator
+            );
+        }
         vm.startBroadcast();
         raffle = new Raffle(
             networkConfig.entryFee,

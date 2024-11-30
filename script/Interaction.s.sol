@@ -27,5 +27,18 @@ contract CreateSubscription is Script {
         return (subId, vrfCoordinator);
     }
 
-    function run() public {}
+    function run() public {
+        CreateSubscriptionUsingConfig();
+    }
+}
+
+contract FundSubscription is Script {
+    uint256 public constant FUND_AMOUNT = 3 ether;
+
+    function FundSubscriptionUsingConfig() public {
+        HelperConfig helperConfig = new HelperConfig();
+        HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
+        address vrfCoordinator = config.vrfCoordinator;
+        uint256 subscriptionId = config.subscriptionId;
+    }
 }
