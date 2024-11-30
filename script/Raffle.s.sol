@@ -24,8 +24,10 @@ contract DeployRaffle is Script {
         HelperConfig.NetworkConfig memory networkConfig = helperConfig
             .getConfig();
         if (networkConfig.subscriptionId == 0) {
-            //create subscription
+            //create subscription in case the subscription id is 0
             CreateSubscription createSubscription = new CreateSubscription();
+            //overwriting the newtorkConfig method like subscriptionId,vrfCoordinator to make sure it exists for anvil chain as well
+            //createSubscription returns subscriptionId and vrf Coordinator Id
             (
                 networkConfig.subscriptionId,
                 networkConfig.vrfCoordinator
