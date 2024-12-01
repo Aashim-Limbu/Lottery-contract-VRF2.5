@@ -41,6 +41,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     //Events
     event VerifiedPlayer(address indexed player);
     event WinnerPicked(address indexed winner);
+    event RequestedRaffleWinner(uint256 indexed requestId);
 
     constructor(
         uint256 entryFee,
@@ -93,7 +94,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
             hasTimePassed &&
             isContractOpen &&
             hasBalance &&
-            hasPlayers; //it returns automatically
+            hasPlayers; //it returns automatically no need to write return upkeepNeeded
         return (upkeepNeeded, "");
     }
 
@@ -121,6 +122,8 @@ contract Raffle is VRFConsumerBaseV2Plus {
                 )
             });
         uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
+        //this is redundant/ unnecessary since it is emitted in the requestRandomWords as well
+        emit RequestedRaffleWinner(requestId);
     }
 
     function fulfillRandomWords(
@@ -154,5 +157,11 @@ contract Raffle is VRFConsumerBaseV2Plus {
     }
     function getPlayerWithIndex(uint256 idx)  public view returns(address) {
         return s_players[idx];
+    }
+    function getLastTimeInvoked() public view returns(uint256){
+        return s_lastTimeInvoked;
+    }
+    function getRecentWinner()public view returns(address){
+        return s_recentWinner;
     }
 }
