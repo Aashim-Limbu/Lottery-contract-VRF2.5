@@ -4,11 +4,11 @@ pragma solidity >=0.8.0 <0.9.0;
 import {Test, console} from "forge-std/Test.sol";
 import {DeployRaffle} from "@/script/Raffle.s.sol";
 import {Raffle} from "../../src/Raffle.sol";
-import {HelperConfig} from "@/script/HelperConfig.s.sol";
+import {HelperConfig,CodeConstants} from "@/script/HelperConfig.s.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
-contract RaffleTest is Test {
+contract RaffleTest is Test , CodeConstants {
     Raffle public raffle;
     HelperConfig public helperConfig;
 
@@ -200,6 +200,12 @@ contract RaffleTest is Test {
     /*//////////////////////////////////////////////////////////////
                           FULFILL RANDOM WORDS
     //////////////////////////////////////////////////////////////*/
+    modifier skipFork{ // since we're pretending to be vrf itself while calling the fulfill Random words it is erroring out
+        if(block.chainid != LOCAL_CHAIN_ID){
+            return ;
+        }
+        _;
+    }
     function testIfFulfillRandomWordGetCalledOnlyAfterPerformUpkeep(
         uint256 randomRequestId
     ) public raffleEntered {
@@ -214,10 +220,12 @@ contract RaffleTest is Test {
     function testFulfillRandomWordPicksAWinnerResetAndSendsMoney()
         public
         raffleEntered
+        skipFork
     {
         //Arrange
         uint256 additionalEntrants = 3;
         uint256 startingIndex = 1;
+        // uint256(keccak256(abi.encode(1, 0))); --> 78541660797044910968829902406342334108369226379826116161446442989268089806461 % 4 = 1
         address expectedWinner = address(1);
 
         for (
@@ -237,6 +245,7 @@ contract RaffleTest is Test {
         raffle.performUpkeep("");
         Vm.Log[] memory entries = vm.getRecordedLogs();
         bytes32 requestId = entries[1].topics[1];
+        //pretend to be chainlink vrf
         VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(
             uint256(requestId),
             address(raffle)

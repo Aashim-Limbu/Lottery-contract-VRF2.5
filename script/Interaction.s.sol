@@ -12,16 +12,18 @@ contract CreateSubscription is Script {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
         address vrfCoordinator = config.vrfCoordinator;
+        address account = config.account;
         //create subscription
-        (uint256 subId, ) = createSubscription(vrfCoordinator);
+        (uint256 subId, ) = createSubscription(vrfCoordinator, account);
         return (subId, vrfCoordinator);
     }
 
     function createSubscription(
-        address vrfCoordinator
+        address vrfCoordinator,
+        address account
     ) public returns (uint256, address) {
         console.log("Creating the subscriptionon chainId: ", block.chainid);
-        vm.startBroadcast();
+        vm.startBroadcast(account);
         uint256 subId = VRFCoordinatorV2_5Mock(vrfCoordinator)
             .createSubscription();
         vm.stopBroadcast();
@@ -44,26 +46,30 @@ contract FundSubscription is Script, CodeConstants {
         address vrfCoordinator = config.vrfCoordinator;
         uint256 subscriptionId = config.subscriptionId;
         address linkToken = config.link;
-        fundSubscription(vrfCoordinator, subscriptionId, linkToken);
+        address account = config.account;
+        fundSubscription(vrfCoordinator, subscriptionId, linkToken, account);
     }
 
     function fundSubscription(
         address vrfCoordinator,
         uint256 subscriptionId,
-        address linkToken
+        address linkToken,
+        address account
     ) public {
         console.log("funding subscription: ", subscriptionId);
         console.log("VRF coordinator : ", vrfCoordinator);
         console.log("On ChainId : ", block.chainid);
         if (block.chainid == LOCAL_CHAIN_ID) {
             vm.startBroadcast();
+            //invoking the fund subscription to mimic the funding of the subscription
             VRFCoordinatorV2_5Mock(vrfCoordinator).fundSubscription(
                 subscriptionId,
                 FUND_AMOUNT * 100
             );
             vm.stopBroadcast();
         } else {
-            vm.startBroadcast();
+            vm.startBroadcast(account);
+            //outside of the anvil chain we need to fund with actual fund with ERC20 contract to transfer LINK Token
             LinkToken(linkToken).transferAndCall(
                 vrfCoordinator,
                 FUND_AMOUNT,
@@ -82,15 +88,17 @@ contract AddConsumer is Script {
         HelperConfig.NetworkConfig memory netConfig = helperConfig.getConfig();
         uint256 subId = netConfig.subscriptionId;
         address vrfCoordinator = netConfig.vrfCoordinator;
-        addConsumer(mostRecentDeployedContract, vrfCoordinator, subId);
+        address account = netConfig.account;
+        addConsumer(mostRecentDeployedContract, vrfCoordinator, subId, account);
     }
 
     function addConsumer(
         address contractToAddtoVrf,
         address vrfCoordinator,
-        uint256 subId
+        uint256 subId,
+        address account
     ) public {
-        vm.startBroadcast();
+        vm.startBroadcast(account);
         VRFCoordinatorV2_5Mock(vrfCoordinator).addConsumer(
             subId,
             contractToAddtoVrf

@@ -121,6 +121,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
                     VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
                 )
             });
+        //This will cause InvalidConsumer() 
         uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
         //this is redundant/ unnecessary since it is emitted in the requestRandomWords as well
         emit RequestedRaffleWinner(requestId);
@@ -139,7 +140,6 @@ contract Raffle is VRFConsumerBaseV2Plus {
         s_players = new address payable[](0);
         s_lastTimeInvoked = block.timestamp;
         emit WinnerPicked(recentWinner);
-
         //Interactions (External Contract Interactions)
         (bool sent, ) = recentWinner.call{value: address(this).balance}("");
         if (!sent) {
@@ -155,13 +155,16 @@ contract Raffle is VRFConsumerBaseV2Plus {
     function getRaffleState() public view returns (RaffleState) {
         return s_raffleState;
     }
-    function getPlayerWithIndex(uint256 idx)  public view returns(address) {
+
+    function getPlayerWithIndex(uint256 idx) public view returns (address) {
         return s_players[idx];
     }
-    function getLastTimeInvoked() public view returns(uint256){
+
+    function getLastTimeInvoked() public view returns (uint256) {
         return s_lastTimeInvoked;
     }
-    function getRecentWinner()public view returns(address){
+
+    function getRecentWinner() public view returns (address) {
         return s_recentWinner;
     }
 }

@@ -21,24 +21,26 @@ contract DeployRaffle is Script {
             .getConfig();
         if (networkConfig.subscriptionId == 0) {
             //1. create subscription in case the subscription id is 0
-            // // 1. overwriting the newtorkConfig method like subscriptionId,vrfCoordinator to make sure it exists for anvil chain as well
-            // // 2. createSubscription returns subscriptionId and vrf Coordinator Id
+            //      // 1. overwriting the newtorkConfig method like subscriptionId,vrfCoordinator to make sure it exists for anvil chain as well
+            //      // 2. createSubscription returns subscriptionId and vrf Coordinator Id
             CreateSubscription createSubscription = new CreateSubscription();
             (
                 networkConfig.subscriptionId,
                 networkConfig.vrfCoordinator
             ) = createSubscription.createSubscription(
-                networkConfig.vrfCoordinator
+                networkConfig.vrfCoordinator,
+                networkConfig.account
             );
             //2. Fund It
             FundSubscription fundSubscription = new FundSubscription();
             fundSubscription.fundSubscription(
                 networkConfig.vrfCoordinator,
                 networkConfig.subscriptionId,
-                networkConfig.link
+                networkConfig.link,
+                networkConfig.account
             );
         }
-        vm.startBroadcast();
+        vm.startBroadcast(networkConfig.account);
         raffle = new Raffle(
             networkConfig.entryFee,
             networkConfig.interval,
@@ -52,7 +54,8 @@ contract DeployRaffle is Script {
         addConsumer.addConsumer(
             address(raffle),
             networkConfig.vrfCoordinator,
-            networkConfig.subscriptionId
+            networkConfig.subscriptionId,
+            networkConfig.account
         );
         return (raffle, helperConfig);
     }
