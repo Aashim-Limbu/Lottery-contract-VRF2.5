@@ -204,6 +204,8 @@ contract RaffleTest is Test , CodeConstants {
         if(block.chainid != LOCAL_CHAIN_ID){
             return ;
         }
+        //if it is not the local_chain_id it just get return cause we can't pretend to be chainlink vrf node on the test net / forked net like sepolia
+        //There are already real Chainlink VRF nodes working on the testnet and they are the one that can call the fulfillRandomWords.
         _;
     }
     function testIfFulfillRandomWordGetCalledOnlyAfterPerformUpkeep(

@@ -99,7 +99,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     }
 
     function performUpkeep(bytes calldata /* performData */) external {
-        //
+        //this is redundant as it is called only after the checkUpkeep returns true
         (bool upkeepNeeded, ) = checkUpkeep("");
         if (!upkeepNeeded) {
             revert Raffle__UpkeepNotNeeded(
@@ -121,7 +121,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
                     VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
                 )
             });
-        //This will cause InvalidConsumer() 
+        //This will cause InvalidConsumer()
         uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
         //this is redundant/ unnecessary since it is emitted in the requestRandomWords as well
         emit RequestedRaffleWinner(requestId);
