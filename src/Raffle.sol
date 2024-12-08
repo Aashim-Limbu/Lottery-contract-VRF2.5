@@ -97,7 +97,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
             hasPlayers; //it returns automatically no need to write return upkeepNeeded
         return (upkeepNeeded, "");
     }
-
+    //Automatically gets called 
     function performUpkeep(bytes calldata /* performData */) external {
         //this is redundant as it is called only after the checkUpkeep returns true
         (bool upkeepNeeded, ) = checkUpkeep("");
@@ -108,11 +108,12 @@ contract Raffle is VRFConsumerBaseV2Plus {
                 RaffleState.OPEN
             );
         }
+        // Raffle Busy
         s_raffleState = RaffleState.CALCULATING;
         //generate random words then
         VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient
             .RandomWordsRequest({
-                keyHash: i_keyHash, //keyHash which stand for some gasoline for some gasprice to work with chainlink node
+                keyHash: i_keyHash, //keyHash which stand for some gas lane for some gasprice to work with chainlink node
                 subId: i_subscriptionId, //how we fund the oracle gas while working with chainlink vrf
                 requestConfirmations: REQUEST_CONFIRMATION, //how many block should we wait
                 callbackGasLimit: i_callbackGasLimit, // boundry so that we don't expend too much gas on the callback
@@ -136,6 +137,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         uint256 indexOfWinner = randomWords[0] % s_players.length;
         address payable recentWinner = s_players[indexOfWinner];
         s_recentWinner = recentWinner;
+        // Resetting Raffle State
         s_raffleState = RaffleState.OPEN;
         s_players = new address payable[](0);
         s_lastTimeInvoked = block.timestamp;

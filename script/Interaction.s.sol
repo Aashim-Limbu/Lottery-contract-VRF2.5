@@ -32,6 +32,7 @@ contract CreateSubscription is Script {
     }
 
     function run() public {
+        console.log("Hi from Create SUbscription");
         CreateSubscriptionUsingConfig();
     }
 }
@@ -111,6 +112,7 @@ contract AddConsumer is Script {
             "Raffle",
             block.chainid
         );
+        console.log("Hi from Add consumer ");
         addConsumerUsingConfig(mostRecentDeployment);
     }
 }

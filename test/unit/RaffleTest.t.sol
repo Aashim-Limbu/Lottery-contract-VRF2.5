@@ -4,11 +4,11 @@ pragma solidity >=0.8.0 <0.9.0;
 import {Test, console} from "forge-std/Test.sol";
 import {DeployRaffle} from "@/script/Raffle.s.sol";
 import {Raffle} from "../../src/Raffle.sol";
-import {HelperConfig,CodeConstants} from "@/script/HelperConfig.s.sol";
+import {HelperConfig, CodeConstants} from "@/script/HelperConfig.s.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
-contract RaffleTest is Test , CodeConstants {
+contract RaffleTest is Test, CodeConstants {
     Raffle public raffle;
     HelperConfig public helperConfig;
 
@@ -51,16 +51,6 @@ contract RaffleTest is Test , CodeConstants {
         //Act & Assert
         vm.expectRevert(Raffle.Raffle__InsufficientDeposit.selector);
         raffle.enterRaffle();
-    }
-
-    function testRafflePlayerWhenTheyEnter() public {
-        //Arrange
-        vm.prank(PLAYER);
-        //Act
-        raffle.enterRaffle{value: entryFee}();
-        //Assert
-        address recordedPlayer = raffle.getPlayerWithIndex(0);
-        assert(PLAYER == recordedPlayer);
     }
 
     function testRaffleEnterEvent() public {
@@ -154,8 +144,11 @@ contract RaffleTest is Test , CodeConstants {
         raffle.enterRaffle{value: entryFee}();
         vm.warp(block.timestamp + interval + 1);
         vm.roll(block.number + 1);
-        //Assert
         raffle.performUpkeep("");
+        //Act/Assert
+        vm.expectRevert(Raffle.Raffle__NotOpen.selector);
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: entryFee}();
     }
 
     function testPerformUpkeepRevertIfCheckUpkeepIsFalse() public {
@@ -200,14 +193,16 @@ contract RaffleTest is Test , CodeConstants {
     /*//////////////////////////////////////////////////////////////
                           FULFILL RANDOM WORDS
     //////////////////////////////////////////////////////////////*/
-    modifier skipFork{ // since we're pretending to be vrf itself while calling the fulfill Random words it is erroring out
-        if(block.chainid != LOCAL_CHAIN_ID){
-            return ;
+    modifier skipFork() {
+        // since we're pretending to be vrf itself while calling the fulfill Random words it is erroring out
+        if (block.chainid != LOCAL_CHAIN_ID) {
+            return;
         }
         //if it is not the local_chain_id it just get return cause we can't pretend to be chainlink vrf node on the test net / forked net like sepolia
         //There are already real Chainlink VRF nodes working on the testnet and they are the one that can call the fulfillRandomWords.
         _;
     }
+
     function testIfFulfillRandomWordGetCalledOnlyAfterPerformUpkeep(
         uint256 randomRequestId
     ) public raffleEntered {

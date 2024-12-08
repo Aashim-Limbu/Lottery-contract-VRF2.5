@@ -15,23 +15,16 @@ contract DeployRaffle is Script {
 
     function deployContract() public returns (Raffle, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
-        //initializing the network configuration before deploying the Raffle contract
-        //First we don't have the deployed configuration for the Anvil test chain thus we're initializing the mock
-        HelperConfig.NetworkConfig memory networkConfig = helperConfig
-            .getConfig();
+        ///Straight to point if it is deployed on the sepolia chain it just returns the network config
+        //Else for the anvil chain, we kind of deploy our mock and then assign them to vrfCoordinator address and then eventually it get returns 
+        HelperConfig.NetworkConfig memory networkConfig = helperConfig.getConfig();
         if (networkConfig.subscriptionId == 0) {
-            //1. create subscription in case the subscription id is 0
-            //      // 1. overwriting the newtorkConfig method like subscriptionId,vrfCoordinator to make sure it exists for anvil chain as well
-            //      // 2. createSubscription returns subscriptionId and vrf Coordinator Id
+            //1. Create Subscription incase the Subscription id is 0.
+            //      // 1. overwriting the newtorkConfig method like subscriptionId,vrfCoordinator to make sure it exists for anvil chain as well .
+            //      // 2. createSubscription returns subscriptionId and vrf Coordinator Id .
             CreateSubscription createSubscription = new CreateSubscription();
-            (
-                networkConfig.subscriptionId,
-                networkConfig.vrfCoordinator
-            ) = createSubscription.createSubscription(
-                networkConfig.vrfCoordinator,
-                networkConfig.account
-            );
-            //2. Fund It
+            ( networkConfig.subscriptionId, networkConfig.vrfCoordinator ) = createSubscription.createSubscription( networkConfig.vrfCoordinator, networkConfig.account );
+            //2. Fund It .
             FundSubscription fundSubscription = new FundSubscription();
             fundSubscription.fundSubscription(
                 networkConfig.vrfCoordinator,
