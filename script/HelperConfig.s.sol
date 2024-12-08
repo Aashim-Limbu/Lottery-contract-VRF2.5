@@ -26,7 +26,7 @@ contract HelperConfig is CodeConstants, Script {
         bytes32 gasLane;
         uint256 subscriptionId;
         uint32 callbackGasLimit;
-        address link;
+        address link; //this is for the ERC20 token for chainlink while funding the subscription
         address account;
     }
     NetworkConfig public LocalNetworkConfig;
@@ -56,10 +56,10 @@ contract HelperConfig is CodeConstants, Script {
                 vrfCoordinator: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B,
                 gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
                 callbackGasLimit: 500000,
-                subscriptionId: 0,
+                subscriptionId: 103936461736136836701642311730065400657427650929713150799754725459001835480082,
                 // Link Token contracts https://docs.chain.link/resources/link-token-contracts
                 link: 0x779877A7B0D9E8603169DdbD7836e478b4624789,
-                account: 0xA33D15455419d510512e4E470aD70f32f707bD44//add public key
+                account: 0xA33D15455419d510512e4E470aD70f32f707bD44 //add public key
             });
     }
 

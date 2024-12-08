@@ -41,7 +41,7 @@ contract CreateSubscription is Script {
 contract FundSubscription is Script, CodeConstants {
     uint256 public constant FUND_AMOUNT = 3 ether; //equivalent to LINK 3 LINK
 
-    function FundSubscriptionUsingConfig() public {
+    function fundSubscriptionUsingConfig() public {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
         address vrfCoordinator = config.vrfCoordinator;
@@ -62,15 +62,17 @@ contract FundSubscription is Script, CodeConstants {
         console.log("On ChainId : ", block.chainid);
         if (block.chainid == LOCAL_CHAIN_ID) {
             vm.startBroadcast();
-            //invoking the fund subscription to mimic the funding of the subscription
+            //invoking the fund subscription to mimic the funding of the subscription for anvil chain
             VRFCoordinatorV2_5Mock(vrfCoordinator).fundSubscription(
                 subscriptionId,
                 FUND_AMOUNT * 100
             );
             vm.stopBroadcast();
         } else {
+            //We've seen that during funding a subscription the transfer And Call function get invoked.
+            //for sepolia
             vm.startBroadcast(account);
-            //outside of the anvil chain we need to fund with actual fund with ERC20 contract to transfer LINK Token
+            //linkToken address we got from the chainlink itself // Link Token contracts https://docs.chain.link/resources/link-token-contracts
             LinkToken(linkToken).transferAndCall(
                 vrfCoordinator,
                 FUND_AMOUNT,
@@ -79,11 +81,14 @@ contract FundSubscription is Script, CodeConstants {
             vm.stopBroadcast();
         }
     }
+
+    function run() public {
+        fundSubscriptionUsingConfig();
+    }
 }
 
 //programatically adding a consumer
 contract AddConsumer is Script {
-    //used for forge script script/AddConsumer.s.sol --broadcast --rpc-url <RPC_URL>
     function addConsumerUsingConfig(address mostRecentDeployedContract) public {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory netConfig = helperConfig.getConfig();
@@ -95,7 +100,7 @@ contract AddConsumer is Script {
 
     function addConsumer(
         address contractToAddtoVrf,
-        address vrfCoordinator,
+        address vrfCoordinator, 
         uint256 subId,
         address account
     ) public {

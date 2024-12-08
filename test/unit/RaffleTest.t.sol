@@ -213,7 +213,6 @@ contract RaffleTest is Test, CodeConstants {
             address(raffle)
         );
     }
-
     function testFulfillRandomWordPicksAWinnerResetAndSendsMoney()
         public
         raffleEntered
@@ -243,6 +242,7 @@ contract RaffleTest is Test, CodeConstants {
         Vm.Log[] memory entries = vm.getRecordedLogs();
         bytes32 requestId = entries[1].topics[1];
         //pretend to be chainlink vrf
+        //Mocking the fulfillRandom word is served to set the state of Raffle to OPEN
         VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(
             uint256(requestId),
             address(raffle)

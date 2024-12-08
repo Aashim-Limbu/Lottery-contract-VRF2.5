@@ -97,7 +97,8 @@ contract Raffle is VRFConsumerBaseV2Plus {
             hasPlayers; //it returns automatically no need to write return upkeepNeeded
         return (upkeepNeeded, "");
     }
-    //Automatically gets called 
+
+    //Automatically gets called
     function performUpkeep(bytes calldata /* performData */) external {
         //this is redundant as it is called only after the checkUpkeep returns true
         (bool upkeepNeeded, ) = checkUpkeep("");
@@ -129,7 +130,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     }
 
     function fulfillRandomWords(
-        uint256 _requestId,
+        uint256 /*_requestId*/,
         uint256[] calldata randomWords
     ) internal override {
         //Effects Internal Contract State
